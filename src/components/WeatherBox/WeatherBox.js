@@ -9,28 +9,33 @@ const WeatherBox = (props) => {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
   const handleCityChange = useCallback((city) => {
-    //useCallback don't refresh chidren element PickCity when parent component WeatherBox is refreshed
+    //useCallback doesn't refresh chidren element PickCity when parent component WeatherBox is refreshed
     setPending(true);
     setWeather(false);
     setError(false);
     fetch(
       `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=d77f935b2221b70aa3dda57f36069a47&units=metric`
-    ).then((res) => {
-      if (res.status === 200) {
-        return res.json().then((data) => {
-          const weatherData = {
-            city: data.name,
-            temp: data.main.temp,
-            icon: data.weather[0].icon,
-            description: data.weather[0].main,
-          };
-          setWeather(weatherData);
-        });
-      } else {
+    )
+      .then((res) => {
+        if (res.status === 200) {
+          return res.json().then((data) => {
+            const weatherData = {
+              city: data.name,
+              temp: data.main?.temp,
+              icon: data.weather && data.weather[0] ? data.weather[0].icon : undefined,
+              description: data.weather && data.weather[0] ? data.weather[0].main : undefined,
+            };
+            setWeather(weatherData);
+          });
+        } else {
+          setError(true);
+        }
+        setPending(false);
+      })
+      .catch(() => {
+        setPending(false);
         setError(true);
-      }
-      setPending(false);
-    });
+      });
   }, []);
 
   return (
